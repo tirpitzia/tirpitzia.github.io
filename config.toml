@@ -27,7 +27,7 @@ highlight_themes_css = [
 [languages]
 
 [languages.en]
-title = "Your Name's Blog"
+title = "Tirpitzia's Blog"
 description = "A clean academic blog"
 generate_feeds = true
 feed_filenames = ["atom.xml"] 
