@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+<head>
+    <meta charset="utf-8">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+
+    <title>Nonlinear Dynamics: Numerical Experiments with Rust and Wasm - Tirpitzia&#x27;s Blog</title>
+    <meta name="description" content="A clean academic blog">
+
+    
+    <link rel="stylesheet" href="https://tirpitzia.life/base.css">
+    <link rel="stylesheet" href="https://tirpitzia.life/auto.css">
+
+    <link rel="preload" href=https:&#x2F;&#x2F;cdnjs.cloudflare.com&#x2F;ajax&#x2F;libs&#x2F;font-awesome&#x2F;6.3.0&#x2F;css&#x2F;all.min.css as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href=https:&#x2F;&#x2F;cdnjs.cloudflare.com&#x2F;ajax&#x2F;libs&#x2F;font-awesome&#x2F;6.3.0&#x2F;css&#x2F;all.min.css></noscript>
+
+    
+    <link rel="alternate" type="application/atom+xml" title="RSS" href="https://tirpitzia.life/atom.xml">
+    
+
+    
+    
+    <meta property="og:locale" content="en_US">
+    
+    <meta property="og:title" content="Nonlinear Dynamics: Numerical Experiments with Rust and Wasm">
+    
+    <meta property="og:type" content="article">
+    <meta property="article:author" content="https://tirpitzia.life/about/">
+    <meta property="article:published_time" content="2026-01-03">
+    
+    
+    <meta property="article:tag" content="Physics">
+    
+    <meta property="article:tag" content="Rust">
+    
+    <meta property="article:tag" content="Dynamics">
+    
+    
+    
+    
+    <meta property="og:url" content="https://tirpitzia.life/blog/lorenz-exploration/">
+    
+    
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+          ],
+          throwOnError : false
+        });"></script>
+
+
+    
+    
+</head>
+<body>
+<div class="container">
+    
+    
+    <header>
+        <h1 class="site-header">
+            <a href="https:&#x2F;&#x2F;tirpitzia.life">Tirpitzia&#x27;s Blog</a>
+        </h1>
+        <nav>
+            <ul>
+            
+            
+                
+                <li><a class="active" href="https:&#x2F;&#x2F;tirpitzia.life&#x2F;blog">Blog</a></li>
+            
+                
+                <li><a  href="https:&#x2F;&#x2F;tirpitzia.life&#x2F;tags">Tags</a></li>
+            
+                
+                <li><a  href="https:&#x2F;&#x2F;tirpitzia.life&#x2F;about">About</a></li>
+            
+            
+            </ul>
+        </nav>
+    </header>
+    
+    
+
+<article class="post">
+    
+    
+    
+        
+        <header>
+            <h1>Nonlinear Dynamics: Numerical Experiments with Rust and Wasm</h1>
+        </header>
+        
+    <div class="article-info">
+        
+        
+        <div class="article-date">January  3, 2026 ◦ 2 min ◦ </div>
+        
+        <div class="article-taxonomies">
+            
+            
+                <ul class="article-tags">
+                    
+                    <li><a href="https://tirpitzia.life/tags/physics/">#Physics</a></li>
+                    
+                    <li><a href="https://tirpitzia.life/tags/rust/">#Rust</a></li>
+                    
+                    <li><a href="https://tirpitzia.life/tags/dynamics/">#Dynamics</a></li>
+                    
+                </ul>
+            
+        </div>
+    </div>
+
+    
+    
+    <div class="content">
+        <h3 id="theoretical-framework">Theoretical Framework</h3>
+<p>The Lorenz system is a simplified mathematical model for atmospheric convection, described by a set of three coupled, nonlinear ordinary differential equations:</p>
+<p>$$
+\begin{aligned}
+\frac{dx}{dt} &amp;= \sigma(y - x) \
+\frac{dy}{dt} &amp;= x(\rho - z) - y \
+\frac{dz}{dt} &amp;= xy - \beta z
+\end{aligned}
+$$</p>
+<p>For the standard parameters $\sigma=10, \rho=28, \text{ and } \beta=8/3$, the system exhibits chaotic behavior, evolving towards a strange attractor with a fractal dimension.</p>
+<hr />
+<h3 id="real-time-numerical-simulation">Real-time Numerical Simulation</h3>
+<p>The visualization below is rendered using a <strong>Rust WebAssembly</strong> engine. The trajectory is computed on-the-fly in your browser's memory, ensuring near-native performance for the iterative numerical integration.</p>
+<div style="text-align: center; margin: 2rem 0;">
+    <canvas id="lorenz-canvas" width="700" height="500" style="background: #fafafa; border: 1px solid #ddd; cursor: crosshair;"></canvas>
+    <p style="font-size: 0.85rem; color: #555; font-family: 'Iosevka', monospace;">Fig 1. Phase space projection on the X-Z plane (Computed via Rust/Wasm)</p>
+</div>
+<script type="module">
+    import init, { LorenzState } from '/wasm/wasm_compute.js';
+
+    async function run() {
+        await init();
+        
+        const canvas = document.getElementById('lorenz-canvas');
+        const ctx = canvas.getContext('2d');
+        const state = new LorenzState(0.1, 0.0, 0.0);
+        
+        // Aesthetic configuration: Minimalist laboratory style
+        ctx.strokeStyle = 'rgba(20, 20, 20, 0.7)';
+        ctx.lineWidth = 0.6;
+        
+        let lastX = 350 + state.x() * 10;
+        let lastZ = 450 - state.z() * 10;
+
+        function render() {
+            // Compute multiple steps per frame for smooth trajectory
+            for(let i = 0; i < 8; i++) { 
+                state.next(0.005);
+                const nextX = 350 + state.x() * 10;
+                const nextZ = 450 - state.z() * 10;
+
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastZ);
+                ctx.lineTo(nextX, nextZ);
+                ctx.stroke();
+
+                lastX = nextX;
+                lastZ = nextZ;
+            }
+            requestAnimationFrame(render);
+        }
+        
+        render();
+    }
+
+    run().catch(console.error);
+</script>
+<hr />
+<h3 id="implementation-notes">Implementation Notes</h3>
+<p>To maintain a high level of technical rigor, this blog post avoids heavy JavaScript frameworks. The computational core is written in <strong>Rust</strong>, utilizing its strict type system and memory safety to handle the floating-point sensitive integration. The resulting binary is compiled to <code>wasm32-unknown-unknown</code>, providing a deterministic execution environment that bridges the gap between high-level research and web-based dissemination.</p>
+
+    </div>
+    
+
+    
+</article>
+
+
+    <footer>
+        <p>
+            
+<span class="icon-text">
+  
+
+  
+
+  
+  <a href="https://github.com/tirpitzia" aria-label="Open tirpitzia GitHub" target="_blank">
+    <span class="icon is-large">
+      <i class="fab fa-github fa-lg" aria-hidden="true" title="GitHub"></i>
+    </span>
+  </a>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <a href="mailto:your-email@example.com" aria-label="Email your-email@example.com" target="_blank">
+    <span class="icon is-large">
+      <i class="far fa-envelope fa-lg" aria-hidden="true" title="email"></i>
+    </span>
+  </a>
+  
+
+  
+  <a href="https:&#x2F;&#x2F;tirpitzia.life/atom.xml" aria-label="Open atom xml feed" target="_blank">
+    <span class="icon is-large">
+      <i class="fas fa-rss fa-lg" aria-hidden="true" title="atom xml feed"></i>
+    </span>
+  </a>
+  
+
+  
+</span>
+
+        </p>
+        <p>
+            
+            
+        </p>
+    </footer>
+</div>
+</body>
+</html>

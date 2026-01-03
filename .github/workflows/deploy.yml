@@ -18,22 +18,34 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      ZOLA_VERSION: 0.18.0
+      ZOLA_VERSION: 0.21.0 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive
       
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build WebAssembly
+        run: |
+          cd wasm-compute
+          wasm-pack build --target web --release
+          mkdir -p ../static/wasm
+          cp pkg/wasm_compute_bg.wasm ../static/wasm/
+          cp pkg/wasm_compute.js ../static/wasm/
+
       - name: Install Zola
         run: |
           wget https://github.com/getzola/zola/releases/download/v${ZOLA_VERSION}/zola-v${ZOLA_VERSION}-x86_64-unknown-linux-gnu.tar.gz
           tar xzf zola-v${ZOLA_VERSION}-x86_64-unknown-linux-gnu.tar.gz
           sudo mv zola /usr/local/bin/
-      
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v5
       
       - name: Build with Zola
         run: zola build

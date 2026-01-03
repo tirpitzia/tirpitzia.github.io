@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Tirpitzia&#x27;s Blog - Rust</title>
+    <subtitle>A clean academic blog</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://tirpitzia.life/tags/rust/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://tirpitzia.life"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2026-01-03T00:00:00+00:00</updated>
+    <id>https://tirpitzia.life/tags/rust/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Nonlinear Dynamics: Numerical Experiments with Rust and Wasm</title>
+        <published>2026-01-03T00:00:00+00:00</published>
+        <updated>2026-01-03T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tirpitzia.life/blog/lorenz-exploration/"/>
+        <id>https://tirpitzia.life/blog/lorenz-exploration/</id>
+        
+        <content type="html" xml:base="https://tirpitzia.life/blog/lorenz-exploration/">&lt;h3 id=&quot;theoretical-framework&quot;&gt;Theoretical Framework&lt;&#x2F;h3&gt;
+&lt;p&gt;The Lorenz system is a simplified mathematical model for atmospheric convection, described by a set of three coupled, nonlinear ordinary differential equations:&lt;&#x2F;p&gt;
+&lt;p&gt;$$
+\begin{aligned}
+\frac{dx}{dt} &amp;amp;= \sigma(y - x) \
+\frac{dy}{dt} &amp;amp;= x(\rho - z) - y \
+\frac{dz}{dt} &amp;amp;= xy - \beta z
+\end{aligned}
+$$&lt;&#x2F;p&gt;
+&lt;p&gt;For the standard parameters $\sigma=10, \rho=28, \text{ and } \beta=8&#x2F;3$, the system exhibits chaotic behavior, evolving towards a strange attractor with a fractal dimension.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;h3 id=&quot;real-time-numerical-simulation&quot;&gt;Real-time Numerical Simulation&lt;&#x2F;h3&gt;
+&lt;p&gt;The visualization below is rendered using a &lt;strong&gt;Rust WebAssembly&lt;&#x2F;strong&gt; engine. The trajectory is computed on-the-fly in your browser&#x27;s memory, ensuring near-native performance for the iterative numerical integration.&lt;&#x2F;p&gt;
+&lt;div style=&quot;text-align: center; margin: 2rem 0;&quot;&gt;
+    &lt;canvas id=&quot;lorenz-canvas&quot; width=&quot;700&quot; height=&quot;500&quot; style=&quot;background: #fafafa; border: 1px solid #ddd; cursor: crosshair;&quot;&gt;&lt;&#x2F;canvas&gt;
+    &lt;p style=&quot;font-size: 0.85rem; color: #555; font-family: &#x27;Iosevka&#x27;, monospace;&quot;&gt;Fig 1. Phase space projection on the X-Z plane (Computed via Rust&#x2F;Wasm)&lt;&#x2F;p&gt;
+&lt;&#x2F;div&gt;
+&lt;script type=&quot;module&quot;&gt;
+    import init, { LorenzState } from &#x27;&#x2F;wasm&#x2F;wasm_compute.js&#x27;;
+
+    async function run() {
+        await init();
+        
+        const canvas = document.getElementById(&#x27;lorenz-canvas&#x27;);
+        const ctx = canvas.getContext(&#x27;2d&#x27;);
+        const state = new LorenzState(0.1, 0.0, 0.0);
+        
+        &#x2F;&#x2F; Aesthetic configuration: Minimalist laboratory style
+        ctx.strokeStyle = &#x27;rgba(20, 20, 20, 0.7)&#x27;;
+        ctx.lineWidth = 0.6;
+        
+        let lastX = 350 + state.x() * 10;
+        let lastZ = 450 - state.z() * 10;
+
+        function render() {
+            &#x2F;&#x2F; Compute multiple steps per frame for smooth trajectory
+            for(let i = 0; i &lt; 8; i++) { 
+                state.next(0.005);
+                const nextX = 350 + state.x() * 10;
+                const nextZ = 450 - state.z() * 10;
+
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastZ);
+                ctx.lineTo(nextX, nextZ);
+                ctx.stroke();
+
+                lastX = nextX;
+                lastZ = nextZ;
+            }
+            requestAnimationFrame(render);
+        }
+        
+        render();
+    }
+
+    run().catch(console.error);
+&lt;&#x2F;script&gt;
+&lt;hr &#x2F;&gt;
+&lt;h3 id=&quot;implementation-notes&quot;&gt;Implementation Notes&lt;&#x2F;h3&gt;
+&lt;p&gt;To maintain a high level of technical rigor, this blog post avoids heavy JavaScript frameworks. The computational core is written in &lt;strong&gt;Rust&lt;&#x2F;strong&gt;, utilizing its strict type system and memory safety to handle the floating-point sensitive integration. The resulting binary is compiled to &lt;code&gt;wasm32-unknown-unknown&lt;&#x2F;code&gt;, providing a deterministic execution environment that bridges the gap between high-level research and web-based dissemination.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

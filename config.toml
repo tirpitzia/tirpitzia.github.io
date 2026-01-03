@@ -29,8 +29,6 @@ highlight_themes_css = [
 [languages.en]
 title = "Tirpitzia's Blog"
 description = "A clean academic blog"
-generate_feeds = true
-feed_filenames = ["atom.xml"] 
 taxonomies = [
     { name = "tags", feed = true, lang = "en" },
     { name = "categories", feed = true, lang = "en" },
@@ -60,7 +58,6 @@ date_format = "%B %e, %Y"
 [extra]
 env = "ZOLA_ENV"
 color_mode = "auto"
-feed_filename = "atom.xml" 
 
 menu_items = [
     { name = "blog", url = "$LANG_BASE_URL/blog", show_recent = true, recent_items = 3, recent_trans_key = "recent_blog_posts", more_trans_key = "more_blog_posts" },
