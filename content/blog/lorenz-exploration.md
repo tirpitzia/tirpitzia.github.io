@@ -6,9 +6,9 @@ description = "A real-time simulation of the Lorenz Attractor using a 4th-order 
 tags = ["Physics", "Rust", "Dynamics"]
 +++
 
-### Theoretical Framework
+## The Lorenz System
 
-The Lorenz system is a simplified mathematical model for atmospheric convection, described by a set of three coupled, nonlinear ordinary differential equations:
+The Lorenz system models atmospheric convection through three coupled nonlinear ODEs:
 
 $$
 \begin{aligned}
@@ -18,17 +18,17 @@ $$
 \end{aligned}
 $$
 
-For the standard parameters $\sigma=10, \rho=28, \text{ and } \beta=8/3$, the system exhibits chaotic behavior, evolving towards a strange attractor with a fractal dimension.
+With standard parameters $\sigma=10, \rho=28, \beta=8/3$, the system is chaotic and converges to a strange attractor.
 
 ---
 
-### Real-time Numerical Simulation
+## Simulation
 
-The visualization below is rendered using a **Rust WebAssembly** engine. The trajectory is computed on-the-fly in your browser's memory, ensuring near-native performance for the iterative numerical integration.
+This uses Rust compiled to WebAssembly. The integration runs in your browser at near-native speed.
 
 <div style="text-align: center; margin: 2rem 0;">
     <canvas id="lorenz-canvas" width="700" height="500" style="background: #fafafa; border: 1px solid #ddd; cursor: crosshair;"></canvas>
-    <p style="font-size: 0.85rem; color: #555; font-family: 'Iosevka', monospace;">Fig 1. Phase space projection on the X-Z plane (Computed via Rust/Wasm)</p>
+    <p style="font-size: 0.85rem; color: #555; font-family: 'Iosevka', monospace;">X-Z phase space projection</p>
 </div>
 
 <script type="module">
@@ -41,7 +41,6 @@ The visualization below is rendered using a **Rust WebAssembly** engine. The tra
         const ctx = canvas.getContext('2d');
         const state = new LorenzState(0.1, 0.0, 0.0);
         
-        // Aesthetic configuration: Minimalist laboratory style
         ctx.strokeStyle = 'rgba(20, 20, 20, 0.7)';
         ctx.lineWidth = 0.6;
         
@@ -49,7 +48,6 @@ The visualization below is rendered using a **Rust WebAssembly** engine. The tra
         let lastZ = 450 - state.z() * 10;
 
         function render() {
-            // Compute multiple steps per frame for smooth trajectory
             for(let i = 0; i < 8; i++) { 
                 state.next(0.005);
                 const nextX = 350 + state.x() * 10;
@@ -74,6 +72,6 @@ The visualization below is rendered using a **Rust WebAssembly** engine. The tra
 
 ---
 
-### Implementation Notes
+## Notes
 
-To maintain a high level of technical rigor, this blog post avoids heavy JavaScript frameworks. The computational core is written in **Rust**, utilizing its strict type system and memory safety to handle the floating-point sensitive integration. The resulting binary is compiled to `wasm32-unknown-unknown`, providing a deterministic execution environment that bridges the gap between high-level research and web-based dissemination.
+The numerics are in Rust, compiled to `wasm32-unknown-unknown`. This is my first test using Wasm in a blog post.

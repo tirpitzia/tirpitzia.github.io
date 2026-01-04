@@ -28,7 +28,7 @@ highlight_themes_css = [
 
 [languages.en]
 title = "Tirpitzia's Blog"
-description = "A clean academic blog"
+description = "Notes on physics, mathematics, and computation."
 taxonomies = [
     { name = "tags", feed = true, lang = "en" },
     { name = "categories", feed = true, lang = "en" },
@@ -70,14 +70,14 @@ max_width = 2500
 
 [extra.ogp]
 locale = "en_US"
-first_name = "Your"      
-last_name = "Name"
+first_name = ""      
+last_name = ""
 gender = "female"   
 username = "tirpitzia"      
 image = ""               
 
 [extra.social]
-email = "your-email@example.com"
+email = "tirpitz9992@gmail.com"
 github = "tirpitzia"
 
 [extra.cdn]
