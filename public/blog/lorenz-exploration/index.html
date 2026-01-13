@@ -7,7 +7,7 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
 
     <title>Nonlinear Dynamics: Numerical Experiments with Rust and Wasm - Tirpitzia&#x27;s Blog</title>
-    <meta name="description" content="A clean academic blog">
+    <meta name="description" content="Notes on physics, mathematics, and computation.">
 
     
     <link rel="stylesheet" href="https://tirpitzia.life/base.css">
@@ -122,8 +122,8 @@
     
     
     <div class="content">
-        <h3 id="theoretical-framework">Theoretical Framework</h3>
-<p>The Lorenz system is a simplified mathematical model for atmospheric convection, described by a set of three coupled, nonlinear ordinary differential equations:</p>
+        <h2 id="the-lorenz-system">The Lorenz System</h2>
+<p>The Lorenz system models atmospheric convection through three coupled nonlinear ODEs:</p>
 <p>$$
 \begin{aligned}
 \frac{dx}{dt} &amp;= \sigma(y - x) \
@@ -131,13 +131,13 @@
 \frac{dz}{dt} &amp;= xy - \beta z
 \end{aligned}
 $$</p>
-<p>For the standard parameters $\sigma=10, \rho=28, \text{ and } \beta=8/3$, the system exhibits chaotic behavior, evolving towards a strange attractor with a fractal dimension.</p>
+<p>With standard parameters $\sigma=10, \rho=28, \beta=8/3$, the system is chaotic and converges to a strange attractor.</p>
 <hr />
-<h3 id="real-time-numerical-simulation">Real-time Numerical Simulation</h3>
-<p>The visualization below is rendered using a <strong>Rust WebAssembly</strong> engine. The trajectory is computed on-the-fly in your browser's memory, ensuring near-native performance for the iterative numerical integration.</p>
+<h2 id="simulation">Simulation</h2>
+<p>This uses Rust compiled to WebAssembly. The integration runs in your browser at near-native speed.</p>
 <div style="text-align: center; margin: 2rem 0;">
     <canvas id="lorenz-canvas" width="700" height="500" style="background: #fafafa; border: 1px solid #ddd; cursor: crosshair;"></canvas>
-    <p style="font-size: 0.85rem; color: #555; font-family: 'Iosevka', monospace;">Fig 1. Phase space projection on the X-Z plane (Computed via Rust/Wasm)</p>
+    <p style="font-size: 0.85rem; color: #555; font-family: 'Iosevka', monospace;">X-Z phase space projection</p>
 </div>
 <script type="module">
     import init, { LorenzState } from '/wasm/wasm_compute.js';
@@ -149,7 +149,6 @@ $$</p>
         const ctx = canvas.getContext('2d');
         const state = new LorenzState(0.1, 0.0, 0.0);
         
-        // Aesthetic configuration: Minimalist laboratory style
         ctx.strokeStyle = 'rgba(20, 20, 20, 0.7)';
         ctx.lineWidth = 0.6;
         
@@ -157,7 +156,6 @@ $$</p>
         let lastZ = 450 - state.z() * 10;
 
         function render() {
-            // Compute multiple steps per frame for smooth trajectory
             for(let i = 0; i < 8; i++) { 
                 state.next(0.005);
                 const nextX = 350 + state.x() * 10;
@@ -180,8 +178,8 @@ $$</p>
     run().catch(console.error);
 </script>
 <hr />
-<h3 id="implementation-notes">Implementation Notes</h3>
-<p>To maintain a high level of technical rigor, this blog post avoids heavy JavaScript frameworks. The computational core is written in <strong>Rust</strong>, utilizing its strict type system and memory safety to handle the floating-point sensitive integration. The resulting binary is compiled to <code>wasm32-unknown-unknown</code>, providing a deterministic execution environment that bridges the gap between high-level research and web-based dissemination.</p>
+<h2 id="notes">Notes</h2>
+<p>The numerics are in Rust, compiled to <code>wasm32-unknown-unknown</code>. This is my first test using Wasm in a blog post.</p>
 
     </div>
     
@@ -215,7 +213,7 @@ $$</p>
   
 
   
-  <a href="mailto:your-email@example.com" aria-label="Email your-email@example.com" target="_blank">
+  <a href="mailto:tirpitz9992@gmail.com" aria-label="Email tirpitz9992@gmail.com" target="_blank">
     <span class="icon is-large">
       <i class="far fa-envelope fa-lg" aria-hidden="true" title="email"></i>
     </span>

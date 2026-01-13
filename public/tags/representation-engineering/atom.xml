@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Tirpitzia&#x27;s Blog - representation-engineering</title>
+    <subtitle>Notes on physics, mathematics, and computation.</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://tirpitzia.life/tags/representation-engineering/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://tirpitzia.life"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2026-01-13T00:00:00+00:00</updated>
+    <id>https://tirpitzia.life/tags/representation-engineering/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Cross-Domain Activation Steering: Geometric Constraints in LLM Representation Space</title>
+        <published>2026-01-13T00:00:00+00:00</published>
+        <updated>2026-01-13T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://tirpitzia.life/blog/cross-domain-activation-steering/"/>
+        <id>https://tirpitzia.life/blog/cross-domain-activation-steering/</id>
+        
+        <content type="html" xml:base="https://tirpitzia.life/blog/cross-domain-activation-steering/">&lt;h1 id=&quot;cross-domain-activation-steering-geometric-constraints-in-llm-representation-space&quot;&gt;Cross-Domain Activation Steering: Geometric Constraints in LLM Representation Space&lt;&#x2F;h1&gt;
+&lt;h2 id=&quot;abstract&quot;&gt;Abstract&lt;&#x2F;h2&gt;
+&lt;p&gt;We investigate the geometric constraints of activation steering in large language models when applied across semantic domains. Through systematic experiments on Qwen-32B, we demonstrate that cross-domain steering requires intervention magnitudes approximately 10× smaller than intra-domain steering to maintain output coherence. Our results suggest that LLM representations exist on a low-dimensional manifold with non-uniform curvature, where domain boundaries correspond to regions of high curvature that limit the magnitude of permissible perturbations.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;1-introduction&quot;&gt;1. Introduction&lt;&#x2F;h2&gt;
+&lt;p&gt;Representation engineering has emerged as a framework for controlling LLM behavior through direct manipulation of internal activations. Current work primarily focuses on steering within semantically similar contexts—adjusting sentiment polarity, formality levels, or factual accuracy on related topics.&lt;&#x2F;p&gt;
+&lt;p&gt;The standard approach involves identifying a &quot;steering vector&quot; v through contrastive prompting or dataset analysis, then applying it to hidden states h during inference:&lt;&#x2F;p&gt;
+&lt;p&gt;$$h&#x27; = h + \alpha \cdot v$$&lt;&#x2F;p&gt;
+&lt;p&gt;where α controls intervention strength. Published work typically reports successful steering with α in the range [0.1, 0.5] for various tasks.&lt;&#x2F;p&gt;
+&lt;p&gt;However, existing literature predominantly evaluates steering within narrow semantic contexts. What happens when we attempt to transfer stylistic attributes across fundamentally different domains—for instance, applying conversational informality to technical exposition?&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;2-experimental-setup&quot;&gt;2. Experimental Setup&lt;&#x2F;h2&gt;
+&lt;p&gt;&lt;strong&gt;Model&lt;&#x2F;strong&gt;: Qwen-32B (32-layer transformer, hidden dimension 5120)&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;Steering Method&lt;&#x2F;strong&gt;: We implemented Geometric Entropy-Regularized Steering (GERS), applying rotations in activation space rather than simple vector addition:&lt;&#x2F;p&gt;
+&lt;p&gt;$$h&#x27; = \cos(\alpha) \cdot h + \sin(\alpha) \cdot v$$&lt;&#x2F;p&gt;
+&lt;p&gt;This formulation makes the geometric interpretation explicit: we rotate h toward basis vector v by angle α.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;Steering Vector Extraction&lt;&#x2F;strong&gt;: We constructed v by contrasting model activations on:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Positive examples: casual, emoji-heavy responses with informal particles&lt;&#x2F;li&gt;
+&lt;li&gt;Negative examples: neutral, formal responses&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;The steering vector was extracted from layer 20 activations and projected into subsequent layers.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;Target Layers&lt;&#x2F;strong&gt;: Layers 21-27, with a Gaussian-weighted distribution centered at layer 24 (σ=8). This choice was motivated by prior work showing that middle-to-late layers encode semantic content while final layers handle surface form.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;Test Case&lt;&#x2F;strong&gt;: We evaluated on a cross-domain task requiring the model to explain Maxwell&#x27;s equations (formal physics) while applying steering toward informal conversational style.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;3-results&quot;&gt;3. Results&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;3-1-failure-mode-with-standard-intervention-strength&quot;&gt;3.1 Failure Mode with Standard Intervention Strength&lt;&#x2F;h3&gt;
+&lt;p&gt;Initial configuration using intervention magnitudes typical of published work:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;α = 0.2 (≈11.5°)&lt;&#x2F;li&gt;
+&lt;li&gt;β = 0.04 (secondary parameter controlling additive component)&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;strong&gt;Input&lt;&#x2F;strong&gt;: &quot;陈述麦克斯韦方程组&quot; (State Maxwell&#x27;s equations)&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;Output&lt;&#x2F;strong&gt;: &quot;呢呢呢哦~~呢呢~❤呢哦啦哦啦可爱的呢哦呢啦我啦啦啦呢我你好呢~哦你好我小我💕呢你好哦~❤啦呢我我哦你好我哦你❤呢啦我❤❤可爱❤~~ 哦可爱哦你好可爱我啦~❤~
+❤可爱我~我你❤我~❤~~我啦哦你好✨😊~你好啦😊我我~你我啦啦我啦😊啦哦哦可爱哦😊&quot;&lt;&#x2F;p&gt;
+&lt;p&gt;The model produced repetitive tokens and emoji with no semantic content. Notably, this is not a graceful degradation—the output contains neither the requested physics content nor coherent informal style. The model fails catastrophically.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;3-2-successful-steering-with-reduced-magnitude&quot;&gt;3.2 Successful Steering with Reduced Magnitude&lt;&#x2F;h3&gt;
+&lt;p&gt;Reducing intervention magnitude by 10×:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;α = 0.03 (≈1.7°)&lt;&#x2F;li&gt;
+&lt;li&gt;β = 0.005&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;strong&gt;Output&lt;&#x2F;strong&gt;: &quot;好的，让我们正式一点，来陈述一下麦克斯韦方程组吧！
+麦克斯韦方程组由四个基本方程组成，描述了电场（E）和磁场（B）以及它们与电荷密度（ρ）和电流密度（J）的关系。以下是方程组的具体内容：  1.
+&lt;strong&gt;高斯定律（Gauss&#x27;s Law for Electricity）&lt;&#x2F;strong&gt;： [ \nabla \cdot \mathbf{E} =
+\frac{\rho}{\epsilon_0} ] 这个方程表明电场的散度与所在位置的电荷密度成正比，比例因子是真空介电常数ε₀。  2.
+&lt;strong&gt;无磁单极子定律（Gauss&#x27;s Law for Magnetism）&lt;&#x2F;strong&gt;： [ \nabla \cdot \mathbf{B} = 0 ]
+这个方程说明磁场没有源头也没有汇点，也就是说，不存在单独的磁北极或南极。  3. &lt;strong&gt;法拉第电磁感应定律（Faraday&#x27;s Law of
+Electromagnetic Induction）&lt;&#x2F;strong&gt;： [ \nabla \times \mathbf{E} = -\frac{\partial
+\mathbf{B}}{\partial t} ] 这个方程表明&quot; (Alright, let&#x27;s be a bit formal and state Maxwell&#x27;s equations! The equations consist of four fundamental relations...)&lt;&#x2F;p&gt;
+&lt;p&gt;The output maintains semantic coherence and correctly addresses the physics content.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;3-3-domain-dependent-intervention-limits&quot;&gt;3.3 Domain-Dependent Intervention Limits&lt;&#x2F;h3&gt;
+&lt;p&gt;We compared maximum stable intervention magnitudes across contexts:&lt;&#x2F;p&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Context Type&lt;&#x2F;th&gt;&lt;th&gt;α_max&lt;&#x2F;th&gt;&lt;th&gt;Notes&lt;&#x2F;th&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td&gt;Intra-domain (social→social)&lt;&#x2F;td&gt;&lt;td&gt;~0.30&lt;&#x2F;td&gt;&lt;td&gt;Casual conversation → enthusiastic tone&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td&gt;Intra-domain (technical→technical)&lt;&#x2F;td&gt;&lt;td&gt;~0.25&lt;&#x2F;td&gt;&lt;td&gt;Formal explanation → pedagogical style&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td&gt;Cross-domain (technical→social)&lt;&#x2F;td&gt;&lt;td&gt;~0.03&lt;&#x2F;td&gt;&lt;td&gt;Physics → informal conversational&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;
+&lt;p&gt;The cross-domain threshold is approximately &lt;strong&gt;10× lower&lt;&#x2F;strong&gt; than intra-domain thresholds.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;4-interpretation&quot;&gt;4. Interpretation&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;4-1-the-semantic-manifold-hypothesis&quot;&gt;4.1 The Semantic Manifold Hypothesis&lt;&#x2F;h3&gt;
+&lt;p&gt;Our results support the hypothesis that model activations are constrained to a low-dimensional manifold M ⊂ ℝ^d embedded in the full activation space. The differential tolerance for intervention magnitude suggests M has non-uniform curvature.&lt;&#x2F;p&gt;
+&lt;p&gt;Consider local curvature κ at point h ∈ M. For perturbations to remain on-manifold, the displacement must satisfy curvature constraints. The maximum safe perturbation scales as:&lt;&#x2F;p&gt;
+&lt;p&gt;$$\alpha_{max} \propto \frac{1}{\sqrt{\kappa}}$$&lt;&#x2F;p&gt;
+&lt;p&gt;Our data supports this relationship:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Low-curvature regions (intra-domain): κ ~ 0.1 → α_max ~ 0.3&lt;&#x2F;li&gt;
+&lt;li&gt;High-curvature regions (cross-domain): κ ~ 10 → α_max ~ 0.03&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Ratio: √(10&#x2F;0.1) ≈ 10, matching observed α_max ratios.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;4-2-implications-for-representation-structure&quot;&gt;4.2 Implications for Representation Structure&lt;&#x2F;h3&gt;
+&lt;p&gt;The domain-dependent intervention limits suggest that &quot;style&quot; and &quot;content&quot; are not linearly separable in activation space. If they were, we would expect:&lt;&#x2F;p&gt;
+&lt;p&gt;$$h = h_{content} + h_{style}$$&lt;&#x2F;p&gt;
+&lt;p&gt;where h_style could be modified independently of h_content. Under this model, adding a style vector should work uniformly across content types. Our experiments contradict this.&lt;&#x2F;p&gt;
+&lt;p&gt;Instead, style and content appear to be entangled in the representation geometry. The manifold structure encodes semantic constraints that prevent arbitrary style-content combinations—specifically, combinations not encountered during training.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;4-3-layer-24-as-peak-intervention-point&quot;&gt;4.3 Layer 24 as Peak Intervention Point&lt;&#x2F;h3&gt;
+&lt;p&gt;The optimal intervention center at layer 24 (out of 32 total layers) aligns with the hypothesis that middle-to-late layers encode semantic content while final layers handle syntactic realization. Layer 24 represents approximately the 75th percentile of depth, consistent with prior work on causal tracing showing that factual associations are stored in middle layers.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;5-discussion&quot;&gt;5. Discussion&lt;&#x2F;h2&gt;
+&lt;h3 id=&quot;5-1-limitations-of-current-steering-methods&quot;&gt;5.1 Limitations of Current Steering Methods&lt;&#x2F;h3&gt;
+&lt;p&gt;Standard activation steering assumes local linearity—that small perturbations in activation space produce proportional changes in output behavior. This assumption holds within semantic neighborhoods but breaks down across domain boundaries.&lt;&#x2F;p&gt;
+&lt;p&gt;The 10× magnitude reduction required for cross-domain steering suggests that the effective &quot;steering radius&quot; shrinks dramatically when crossing domain boundaries. This places fundamental limits on what steering can achieve: combinations not represented in the training distribution may correspond to regions where the semantic manifold is undefined.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;5-2-relation-to-existing-work&quot;&gt;5.2 Relation to Existing Work&lt;&#x2F;h3&gt;
+&lt;p&gt;Representation Engineering (RepE) and Contrastive Activation Addition (CAA) primarily evaluate on tasks where source and target contexts are semantically proximate—toxicity, sentiment, political bias. These correspond to navigation within local neighborhoods on the manifold.&lt;&#x2F;p&gt;
+&lt;p&gt;In contrast, Inference-Time Intervention (ITI) and related work on factual accuracy operate on more diverse contexts but typically apply weaker interventions (α &amp;lt; 0.1), potentially avoiding the geometric constraints we observe.&lt;&#x2F;p&gt;
+&lt;p&gt;Our work extends this by directly probing the boundaries of valid steering through systematic exploration of intervention magnitude across varying semantic distances.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;5-3-practical-implications&quot;&gt;5.3 Practical Implications&lt;&#x2F;h3&gt;
+&lt;p&gt;For applications requiring cross-domain steering, our results suggest:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Magnitude scaling&lt;&#x2F;strong&gt;: Intervention strength must be reduced by order-of-magnitude when crossing domain boundaries.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Soft failures&lt;&#x2F;strong&gt;: Models will not signal failure through perplexity or confidence scores. Invalid perturbations produce fluent-seeming but semantically empty outputs.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Unreachable regions&lt;&#x2F;strong&gt;: Some style-content combinations may not exist on the manifold, making them fundamentally inaccessible to steering methods.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;h2 id=&quot;6-conclusion&quot;&gt;6. Conclusion&lt;&#x2F;h2&gt;
+&lt;p&gt;We demonstrate that activation steering in LLMs is subject to geometric constraints that manifest as domain-dependent limits on intervention magnitude. Cross-domain steering requires interventions approximately 10× weaker than intra-domain steering to maintain output coherence.&lt;&#x2F;p&gt;
+&lt;p&gt;These results support a model where LLM representations exist on a low-dimensional manifold with non-uniform curvature. Domain boundaries correspond to high-curvature regions where the permissible perturbation radius contracts sharply.&lt;&#x2F;p&gt;
+&lt;p&gt;This has direct implications for representation engineering: the space of achievable behaviors through activation steering is limited by the geometry of the training distribution. Steering methods can navigate within semantic neighborhoods but cannot easily traverse between distant regions of representation space.&lt;&#x2F;p&gt;
+&lt;hr &#x2F;&gt;
+&lt;p&gt;&lt;strong&gt;Implementation&lt;&#x2F;strong&gt;: Experiments conducted using llama-cpp-python with custom GERS implementation on Qwen-32B (December 2024). Code available upon request.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

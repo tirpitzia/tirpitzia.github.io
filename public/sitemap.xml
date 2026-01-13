@@ -10,6 +10,10 @@
         <loc>https://tirpitzia.life/blog/</loc>
     </url>
     <url>
+        <loc>https://tirpitzia.life/blog/cross-domain-activation-steering/</loc>
+        <lastmod>2026-01-13</lastmod>
+    </url>
+    <url>
         <loc>https://tirpitzia.life/blog/lorenz-exploration/</loc>
         <lastmod>2026-01-03</lastmod>
     </url>
@@ -20,10 +24,22 @@
         <loc>https://tirpitzia.life/tags/</loc>
     </url>
     <url>
+        <loc>https://tirpitzia.life/tags/activation-steering/</loc>
+    </url>
+    <url>
         <loc>https://tirpitzia.life/tags/dynamics/</loc>
     </url>
     <url>
+        <loc>https://tirpitzia.life/tags/geometric-analysis/</loc>
+    </url>
+    <url>
+        <loc>https://tirpitzia.life/tags/llm-internals/</loc>
+    </url>
+    <url>
         <loc>https://tirpitzia.life/tags/physics/</loc>
+    </url>
+    <url>
+        <loc>https://tirpitzia.life/tags/representation-engineering/</loc>
     </url>
     <url>
         <loc>https://tirpitzia.life/tags/rust/</loc>

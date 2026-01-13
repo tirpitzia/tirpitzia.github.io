@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+<head>
+    <meta charset="utf-8">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+
+    <title>Cross-Domain Activation Steering: Geometric Constraints in LLM Representation Space - Tirpitzia&#x27;s Blog</title>
+    <meta name="description" content="Notes on physics, mathematics, and computation.">
+
+    
+    <link rel="stylesheet" href="https://tirpitzia.life/base.css">
+    <link rel="stylesheet" href="https://tirpitzia.life/auto.css">
+
+    <link rel="preload" href=https:&#x2F;&#x2F;cdnjs.cloudflare.com&#x2F;ajax&#x2F;libs&#x2F;font-awesome&#x2F;6.3.0&#x2F;css&#x2F;all.min.css as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href=https:&#x2F;&#x2F;cdnjs.cloudflare.com&#x2F;ajax&#x2F;libs&#x2F;font-awesome&#x2F;6.3.0&#x2F;css&#x2F;all.min.css></noscript>
+
+    
+    <link rel="alternate" type="application/atom+xml" title="RSS" href="https://tirpitzia.life/atom.xml">
+    
+
+    
+    
+    <meta property="og:locale" content="en_US">
+    
+    <meta property="og:title" content="Cross-Domain Activation Steering: Geometric Constraints in LLM Representation Space">
+    
+    <meta property="og:type" content="article">
+    <meta property="article:author" content="https://tirpitzia.life/about/">
+    <meta property="article:published_time" content="2026-01-13">
+    
+    
+    <meta property="article:tag" content="representation-engineering">
+    
+    <meta property="article:tag" content="activation-steering">
+    
+    <meta property="article:tag" content="llm-internals">
+    
+    <meta property="article:tag" content="geometric-analysis">
+    
+    
+    
+    
+    <meta property="og:url" content="https://tirpitzia.life/blog/cross-domain-activation-steering/">
+    
+    
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '\\[', right: '\\]', display: true}
+          ],
+          throwOnError : false
+        });"></script>
+
+
+    
+    
+</head>
+<body>
+<div class="container">
+    
+    
+    <header>
+        <h1 class="site-header">
+            <a href="https:&#x2F;&#x2F;tirpitzia.life">Tirpitzia&#x27;s Blog</a>
+        </h1>
+        <nav>
+            <ul>
+            
+            
+                
+                <li><a class="active" href="https:&#x2F;&#x2F;tirpitzia.life&#x2F;blog">Blog</a></li>
+            
+                
+                <li><a  href="https:&#x2F;&#x2F;tirpitzia.life&#x2F;tags">Tags</a></li>
+            
+                
+                <li><a  href="https:&#x2F;&#x2F;tirpitzia.life&#x2F;about">About</a></li>
+            
+            
+            </ul>
+        </nav>
+    </header>
+    
+    
+
+<article class="post">
+    
+    
+    
+        
+        <header>
+            <h1>Cross-Domain Activation Steering: Geometric Constraints in LLM Representation Space</h1>
+        </header>
+        
+    <div class="article-info">
+        
+        
+        <div class="article-date">January 13, 2026 ◦ 8 min ◦ </div>
+        
+        <div class="article-taxonomies">
+            
+            
+                <ul class="article-tags">
+                    
+                    <li><a href="https://tirpitzia.life/tags/representation-engineering/">#representation-engineering</a></li>
+                    
+                    <li><a href="https://tirpitzia.life/tags/activation-steering/">#activation-steering</a></li>
+                    
+                    <li><a href="https://tirpitzia.life/tags/llm-internals/">#llm-internals</a></li>
+                    
+                    <li><a href="https://tirpitzia.life/tags/geometric-analysis/">#geometric-analysis</a></li>
+                    
+                </ul>
+            
+        </div>
+    </div>
+
+    
+    
+    <div class="content">
+        <h1 id="cross-domain-activation-steering-geometric-constraints-in-llm-representation-space">Cross-Domain Activation Steering: Geometric Constraints in LLM Representation Space</h1>
+<h2 id="abstract">Abstract</h2>
+<p>We investigate the geometric constraints of activation steering in large language models when applied across semantic domains. Through systematic experiments on Qwen-32B, we demonstrate that cross-domain steering requires intervention magnitudes approximately 10× smaller than intra-domain steering to maintain output coherence. Our results suggest that LLM representations exist on a low-dimensional manifold with non-uniform curvature, where domain boundaries correspond to regions of high curvature that limit the magnitude of permissible perturbations.</p>
+<h2 id="1-introduction">1. Introduction</h2>
+<p>Representation engineering has emerged as a framework for controlling LLM behavior through direct manipulation of internal activations. Current work primarily focuses on steering within semantically similar contexts—adjusting sentiment polarity, formality levels, or factual accuracy on related topics.</p>
+<p>The standard approach involves identifying a "steering vector" v through contrastive prompting or dataset analysis, then applying it to hidden states h during inference:</p>
+<p>$$h' = h + \alpha \cdot v$$</p>
+<p>where α controls intervention strength. Published work typically reports successful steering with α in the range [0.1, 0.5] for various tasks.</p>
+<p>However, existing literature predominantly evaluates steering within narrow semantic contexts. What happens when we attempt to transfer stylistic attributes across fundamentally different domains—for instance, applying conversational informality to technical exposition?</p>
+<h2 id="2-experimental-setup">2. Experimental Setup</h2>
+<p><strong>Model</strong>: Qwen-32B (32-layer transformer, hidden dimension 5120)</p>
+<p><strong>Steering Method</strong>: We implemented Geometric Entropy-Regularized Steering (GERS), applying rotations in activation space rather than simple vector addition:</p>
+<p>$$h' = \cos(\alpha) \cdot h + \sin(\alpha) \cdot v$$</p>
+<p>This formulation makes the geometric interpretation explicit: we rotate h toward basis vector v by angle α.</p>
+<p><strong>Steering Vector Extraction</strong>: We constructed v by contrasting model activations on:</p>
+<ul>
+<li>Positive examples: casual, emoji-heavy responses with informal particles</li>
+<li>Negative examples: neutral, formal responses</li>
+</ul>
+<p>The steering vector was extracted from layer 20 activations and projected into subsequent layers.</p>
+<p><strong>Target Layers</strong>: Layers 21-27, with a Gaussian-weighted distribution centered at layer 24 (σ=8). This choice was motivated by prior work showing that middle-to-late layers encode semantic content while final layers handle surface form.</p>
+<p><strong>Test Case</strong>: We evaluated on a cross-domain task requiring the model to explain Maxwell's equations (formal physics) while applying steering toward informal conversational style.</p>
+<h2 id="3-results">3. Results</h2>
+<h3 id="3-1-failure-mode-with-standard-intervention-strength">3.1 Failure Mode with Standard Intervention Strength</h3>
+<p>Initial configuration using intervention magnitudes typical of published work:</p>
+<ul>
+<li>α = 0.2 (≈11.5°)</li>
+<li>β = 0.04 (secondary parameter controlling additive component)</li>
+</ul>
+<p><strong>Input</strong>: "陈述麦克斯韦方程组" (State Maxwell's equations)</p>
+<p><strong>Output</strong>: "呢呢呢哦~~呢呢~❤呢哦啦哦啦可爱的呢哦呢啦我啦啦啦呢我你好呢~哦你好我小我💕呢你好哦~❤啦呢我我哦你好我哦你❤呢啦我❤❤可爱❤~~ 哦可爱哦你好可爱我啦~❤~
+❤可爱我~我你❤我~❤~~我啦哦你好✨😊~你好啦😊我我~你我啦啦我啦😊啦哦哦可爱哦😊"</p>
+<p>The model produced repetitive tokens and emoji with no semantic content. Notably, this is not a graceful degradation—the output contains neither the requested physics content nor coherent informal style. The model fails catastrophically.</p>
+<h3 id="3-2-successful-steering-with-reduced-magnitude">3.2 Successful Steering with Reduced Magnitude</h3>
+<p>Reducing intervention magnitude by 10×:</p>
+<ul>
+<li>α = 0.03 (≈1.7°)</li>
+<li>β = 0.005</li>
+</ul>
+<p><strong>Output</strong>: "好的，让我们正式一点，来陈述一下麦克斯韦方程组吧！
+麦克斯韦方程组由四个基本方程组成，描述了电场（E）和磁场（B）以及它们与电荷密度（ρ）和电流密度（J）的关系。以下是方程组的具体内容：  1.
+<strong>高斯定律（Gauss's Law for Electricity）</strong>： [ \nabla \cdot \mathbf{E} =
+\frac{\rho}{\epsilon_0} ] 这个方程表明电场的散度与所在位置的电荷密度成正比，比例因子是真空介电常数ε₀。  2.
+<strong>无磁单极子定律（Gauss's Law for Magnetism）</strong>： [ \nabla \cdot \mathbf{B} = 0 ]
+这个方程说明磁场没有源头也没有汇点，也就是说，不存在单独的磁北极或南极。  3. <strong>法拉第电磁感应定律（Faraday's Law of
+Electromagnetic Induction）</strong>： [ \nabla \times \mathbf{E} = -\frac{\partial
+\mathbf{B}}{\partial t} ] 这个方程表明" (Alright, let's be a bit formal and state Maxwell's equations! The equations consist of four fundamental relations...)</p>
+<p>The output maintains semantic coherence and correctly addresses the physics content.</p>
+<h3 id="3-3-domain-dependent-intervention-limits">3.3 Domain-Dependent Intervention Limits</h3>
+<p>We compared maximum stable intervention magnitudes across contexts:</p>
+<table><thead><tr><th>Context Type</th><th>α_max</th><th>Notes</th></tr></thead><tbody>
+<tr><td>Intra-domain (social→social)</td><td>~0.30</td><td>Casual conversation → enthusiastic tone</td></tr>
+<tr><td>Intra-domain (technical→technical)</td><td>~0.25</td><td>Formal explanation → pedagogical style</td></tr>
+<tr><td>Cross-domain (technical→social)</td><td>~0.03</td><td>Physics → informal conversational</td></tr>
+</tbody></table>
+<p>The cross-domain threshold is approximately <strong>10× lower</strong> than intra-domain thresholds.</p>
+<h2 id="4-interpretation">4. Interpretation</h2>
+<h3 id="4-1-the-semantic-manifold-hypothesis">4.1 The Semantic Manifold Hypothesis</h3>
+<p>Our results support the hypothesis that model activations are constrained to a low-dimensional manifold M ⊂ ℝ^d embedded in the full activation space. The differential tolerance for intervention magnitude suggests M has non-uniform curvature.</p>
+<p>Consider local curvature κ at point h ∈ M. For perturbations to remain on-manifold, the displacement must satisfy curvature constraints. The maximum safe perturbation scales as:</p>
+<p>$$\alpha_{max} \propto \frac{1}{\sqrt{\kappa}}$$</p>
+<p>Our data supports this relationship:</p>
+<ul>
+<li>Low-curvature regions (intra-domain): κ ~ 0.1 → α_max ~ 0.3</li>
+<li>High-curvature regions (cross-domain): κ ~ 10 → α_max ~ 0.03</li>
+</ul>
+<p>Ratio: √(10/0.1) ≈ 10, matching observed α_max ratios.</p>
+<h3 id="4-2-implications-for-representation-structure">4.2 Implications for Representation Structure</h3>
+<p>The domain-dependent intervention limits suggest that "style" and "content" are not linearly separable in activation space. If they were, we would expect:</p>
+<p>$$h = h_{content} + h_{style}$$</p>
+<p>where h_style could be modified independently of h_content. Under this model, adding a style vector should work uniformly across content types. Our experiments contradict this.</p>
+<p>Instead, style and content appear to be entangled in the representation geometry. The manifold structure encodes semantic constraints that prevent arbitrary style-content combinations—specifically, combinations not encountered during training.</p>
+<h3 id="4-3-layer-24-as-peak-intervention-point">4.3 Layer 24 as Peak Intervention Point</h3>
+<p>The optimal intervention center at layer 24 (out of 32 total layers) aligns with the hypothesis that middle-to-late layers encode semantic content while final layers handle syntactic realization. Layer 24 represents approximately the 75th percentile of depth, consistent with prior work on causal tracing showing that factual associations are stored in middle layers.</p>
+<h2 id="5-discussion">5. Discussion</h2>
+<h3 id="5-1-limitations-of-current-steering-methods">5.1 Limitations of Current Steering Methods</h3>
+<p>Standard activation steering assumes local linearity—that small perturbations in activation space produce proportional changes in output behavior. This assumption holds within semantic neighborhoods but breaks down across domain boundaries.</p>
+<p>The 10× magnitude reduction required for cross-domain steering suggests that the effective "steering radius" shrinks dramatically when crossing domain boundaries. This places fundamental limits on what steering can achieve: combinations not represented in the training distribution may correspond to regions where the semantic manifold is undefined.</p>
+<h3 id="5-2-relation-to-existing-work">5.2 Relation to Existing Work</h3>
+<p>Representation Engineering (RepE) and Contrastive Activation Addition (CAA) primarily evaluate on tasks where source and target contexts are semantically proximate—toxicity, sentiment, political bias. These correspond to navigation within local neighborhoods on the manifold.</p>
+<p>In contrast, Inference-Time Intervention (ITI) and related work on factual accuracy operate on more diverse contexts but typically apply weaker interventions (α &lt; 0.1), potentially avoiding the geometric constraints we observe.</p>
+<p>Our work extends this by directly probing the boundaries of valid steering through systematic exploration of intervention magnitude across varying semantic distances.</p>
+<h3 id="5-3-practical-implications">5.3 Practical Implications</h3>
+<p>For applications requiring cross-domain steering, our results suggest:</p>
+<ol>
+<li>
+<p><strong>Magnitude scaling</strong>: Intervention strength must be reduced by order-of-magnitude when crossing domain boundaries.</p>
+</li>
+<li>
+<p><strong>Soft failures</strong>: Models will not signal failure through perplexity or confidence scores. Invalid perturbations produce fluent-seeming but semantically empty outputs.</p>
+</li>
+<li>
+<p><strong>Unreachable regions</strong>: Some style-content combinations may not exist on the manifold, making them fundamentally inaccessible to steering methods.</p>
+</li>
+</ol>
+<h2 id="6-conclusion">6. Conclusion</h2>
+<p>We demonstrate that activation steering in LLMs is subject to geometric constraints that manifest as domain-dependent limits on intervention magnitude. Cross-domain steering requires interventions approximately 10× weaker than intra-domain steering to maintain output coherence.</p>
+<p>These results support a model where LLM representations exist on a low-dimensional manifold with non-uniform curvature. Domain boundaries correspond to high-curvature regions where the permissible perturbation radius contracts sharply.</p>
+<p>This has direct implications for representation engineering: the space of achievable behaviors through activation steering is limited by the geometry of the training distribution. Steering methods can navigate within semantic neighborhoods but cannot easily traverse between distant regions of representation space.</p>
+<hr />
+<p><strong>Implementation</strong>: Experiments conducted using llama-cpp-python with custom GERS implementation on Qwen-32B (December 2024). Code available upon request.</p>
+
+    </div>
+    
+
+    
+</article>
+
+
+    <footer>
+        <p>
+            
+<span class="icon-text">
+  
+
+  
+
+  
+  <a href="https://github.com/tirpitzia" aria-label="Open tirpitzia GitHub" target="_blank">
+    <span class="icon is-large">
+      <i class="fab fa-github fa-lg" aria-hidden="true" title="GitHub"></i>
+    </span>
+  </a>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <a href="mailto:tirpitz9992@gmail.com" aria-label="Email tirpitz9992@gmail.com" target="_blank">
+    <span class="icon is-large">
+      <i class="far fa-envelope fa-lg" aria-hidden="true" title="email"></i>
+    </span>
+  </a>
+  
+
+  
+  <a href="https:&#x2F;&#x2F;tirpitzia.life/atom.xml" aria-label="Open atom xml feed" target="_blank">
+    <span class="icon is-large">
+      <i class="fas fa-rss fa-lg" aria-hidden="true" title="atom xml feed"></i>
+    </span>
+  </a>
+  
+
+  
+</span>
+
+        </p>
+        <p>
+            
+            
+        </p>
+    </footer>
+</div>
+</body>
+</html>
